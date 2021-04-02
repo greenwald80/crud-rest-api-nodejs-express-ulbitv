@@ -1,10 +1,9 @@
-import Post from "../models/Post.js";
+import PostService from "../services/PostService.js";
 
 class PostController {
   async create(req, res) {
     try {
-      const { author, title, content, picture } = req.body;
-      const post = await Post.create({ author, title, content, picture });
+      const post = await PostService.create(req.body);
       res.status(200).json(post);
     } catch (e) {
       console.log(e);
@@ -14,7 +13,7 @@ class PostController {
 
   async getAll(req, res) {
     try {
-      const posts = await Post.find();
+      const posts = await PostService.getAll();
       if (posts.length > 0) {
         return res.status(200).json(posts);
       }
@@ -26,13 +25,11 @@ class PostController {
 
   async getOne(req, res) {
     try {
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ message: "ID is required" });
-      }
-      const post = await Post.findById(id);
+      const post = await PostService.getOne(req.params.id);
       if (post) {
         return res.status(200).json(post);
+      } else {
+        return res.json({ message: `No post with id: ${req.params.id}` });
       }
     } catch (e) {
       console.log(e);
@@ -42,27 +39,17 @@ class PostController {
 
   async update(req, res) {
     try {
-      const post = req.body;
-      if (!post._id) {
-        return res.status(400).json({ message: "ID is required" });
-      }
-      const updatedPost = await Post.findByIdAndUpdate(post._id, post, {
-        new: true,
-      });
+      const updatedPost = await PostService.update(req.body);
       return res.status(200).json(updatedPost);
     } catch (e) {
       console.log(e);
-      res.status(500).json(e);
+      res.status(500).json(e.message);
     }
   }
 
   async delete(req, res) {
     try {
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ message: "ID is required" });
-      }
-      const post = await Post.findByIdAndDelete(id);
+      const post = await PostService.delete(req.params.id);
       return res.status(200).json(post);
     } catch (e) {
       console.log(e);
